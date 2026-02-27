@@ -11,6 +11,7 @@ import {
 
 type PromptKey = 'professional-experience' | 'software-production' | 'my-future-projects';
 type InfoSectionKey = 'career' | 'skills' | 'education' | 'chat';
+type ScoreSide = 'left' | 'right';
 type AuthStage =
   | 'unauthorized'
   | 'login'
@@ -119,8 +120,26 @@ export class App implements AfterViewInit, OnDestroy {
   private readonly paddleSpeed = 2.7;
   private leftScore = 0;
   private rightScore = 0;
+  private leftMissFrames = 0;
+  private rightMissFrames = 0;
+  private readonly forcedScoreIntervalMs = 95_000;
+  private nextForcedScoreAt = 0;
+  private lastScoreSide: ScoreSide | null = null;
+  private lastScoreTime = 0;
+  private readonly particles: Array<{
+    x: number;
+    y: number;
+    vx: number;
+    vy: number;
+    size: number;
+    life: number;
+    maxLife: number;
+    color: string;
+  }> = [];
+  private audioContext?: AudioContext;
 
   constructor() {
+    this.nextForcedScoreAt = performance.now() + 45_000;
     this.startTyping('professional-experience');
     this.beginAuthSequence();
   }
@@ -373,12 +392,57 @@ export class App implements AfterViewInit, OnDestroy {
   }
 
   private updatePong(): void {
+    const now = performance.now();
+    const shouldForceScore = now >= this.nextForcedScoreAt;
+
     const ballCenterY = this.ballY + this.ballSize / 2;
     const leftCenter = this.leftPaddleY + this.paddleHeight / 2;
     const rightCenter = this.rightPaddleY + this.paddleHeight / 2;
 
-    this.leftPaddleY += Math.sign(ballCenterY - leftCenter) * this.paddleSpeed;
-    this.rightPaddleY += Math.sign(ballCenterY - rightCenter) * this.paddleSpeed;
+    const leftApproaching = this.ballVX < 0;
+    const rightApproaching = this.ballVX > 0;
+
+    if (
+      leftApproaching &&
+      this.leftMissFrames === 0 &&
+      this.ballX < this.canvasWidth * 0.32 &&
+      Math.random() < 0.0007
+    ) {
+      this.leftMissFrames = 38 + Math.floor(Math.random() * 16);
+    }
+
+    if (
+      rightApproaching &&
+      this.rightMissFrames === 0 &&
+      this.ballX > this.canvasWidth * 0.68 &&
+      Math.random() < 0.0007
+    ) {
+      this.rightMissFrames = 38 + Math.floor(Math.random() * 16);
+    }
+
+    if (shouldForceScore && leftApproaching && this.ballX < this.canvasWidth * 0.42) {
+      this.leftMissFrames = Math.max(this.leftMissFrames, 120);
+    }
+
+    if (shouldForceScore && rightApproaching && this.ballX > this.canvasWidth * 0.58) {
+      this.rightMissFrames = Math.max(this.rightMissFrames, 120);
+    }
+
+    if (this.leftMissFrames > 0) {
+      const escapeTarget = ballCenterY < this.canvasHeight / 2 ? this.canvasHeight * 0.82 : this.canvasHeight * 0.18;
+      this.leftPaddleY += Math.sign(escapeTarget - leftCenter) * this.paddleSpeed * 1.35;
+      this.leftMissFrames -= 1;
+    } else {
+      this.leftPaddleY += Math.sign(ballCenterY - leftCenter) * this.paddleSpeed;
+    }
+
+    if (this.rightMissFrames > 0) {
+      const escapeTarget = ballCenterY < this.canvasHeight / 2 ? this.canvasHeight * 0.82 : this.canvasHeight * 0.18;
+      this.rightPaddleY += Math.sign(escapeTarget - rightCenter) * this.paddleSpeed * 1.35;
+      this.rightMissFrames -= 1;
+    } else {
+      this.rightPaddleY += Math.sign(ballCenterY - rightCenter) * this.paddleSpeed;
+    }
 
     this.leftPaddleY = this.clampPaddle(this.leftPaddleY);
     this.rightPaddleY = this.clampPaddle(this.rightPaddleY);
@@ -407,23 +471,44 @@ export class App implements AfterViewInit, OnDestroy {
       this.ballY <= this.rightPaddleY + this.paddleHeight;
 
     if (hitsLeftPaddle && this.ballVX < 0) {
-      this.ballVX *= -1;
+      const impactOffset = (ballCenterY - leftCenter) / (this.paddleHeight / 2);
+      const nextSpeed = Math.min(Math.abs(this.ballVX) + 0.08, 4.2);
+      this.ballVX = nextSpeed;
+      this.ballVY = Math.max(-3.2, Math.min(3.2, this.ballVY + impactOffset * 0.45));
       this.ballX = leftPaddleX + this.paddleWidth;
     }
 
     if (hitsRightPaddle && this.ballVX > 0) {
-      this.ballVX *= -1;
+      const impactOffset = (ballCenterY - rightCenter) / (this.paddleHeight / 2);
+      const nextSpeed = Math.min(Math.abs(this.ballVX) + 0.08, 4.2);
+      this.ballVX = -nextSpeed;
+      this.ballVY = Math.max(-3.2, Math.min(3.2, this.ballVY + impactOffset * 0.45));
       this.ballX = rightPaddleX - this.ballSize;
     }
 
     if (this.ballX < -40) {
       this.rightScore += 1;
+      this.handleScore('right');
       this.resetBall(1);
     }
 
     if (this.ballX > this.canvasWidth + 40) {
       this.leftScore += 1;
+      this.handleScore('left');
       this.resetBall(-1);
+    }
+
+    for (let index = this.particles.length - 1; index >= 0; index -= 1) {
+      const particle = this.particles[index];
+      particle.x += particle.vx;
+      particle.y += particle.vy;
+      particle.vx *= 0.992;
+      particle.vy *= 0.992;
+      particle.life -= 1;
+
+      if (particle.life <= 0) {
+        this.particles.splice(index, 1);
+      }
     }
   }
 
@@ -460,16 +545,116 @@ export class App implements AfterViewInit, OnDestroy {
     this.pongCtx.fillStyle = 'rgba(103, 232, 249, 0.95)';
     this.pongCtx.fillRect(this.ballX, this.ballY, this.ballSize, this.ballSize);
 
+    this.pongCtx.shadowBlur = 14;
+    for (const particle of this.particles) {
+      const alpha = Math.max(0, particle.life / particle.maxLife);
+      this.pongCtx.fillStyle = this.withAlpha(particle.color, alpha * 0.9);
+      this.pongCtx.fillRect(particle.x, particle.y, particle.size, particle.size);
+    }
+
     this.pongCtx.shadowBlur = 0;
-    this.pongCtx.fillStyle = 'rgba(248, 250, 252, 0.75)';
-    this.pongCtx.font = '700 30px Inter, Segoe UI, sans-serif';
-    this.pongCtx.textAlign = 'center';
-    this.pongCtx.fillText(`${this.leftScore}  :  ${this.rightScore}`, this.canvasWidth / 2, 56);
+    this.pongCtx.fillStyle = 'rgba(248, 250, 252, 0.88)';
+    this.pongCtx.font = '700 34px Inter, Segoe UI, sans-serif';
+    this.pongCtx.textAlign = 'left';
+    this.pongCtx.fillText(`${this.leftScore}`, 28, 46);
+    this.pongCtx.textAlign = 'right';
+    this.pongCtx.fillText(`${this.rightScore}`, this.canvasWidth - 28, 46);
+
+    if (this.lastScoreSide && performance.now() - this.lastScoreTime < 950) {
+      this.pongCtx.fillStyle = 'rgba(253, 224, 71, 0.88)';
+      this.pongCtx.font = '700 18px Inter, Segoe UI, sans-serif';
+      this.pongCtx.textAlign = 'center';
+      this.pongCtx.fillText(
+        `${this.lastScoreSide === 'left' ? 'LEFT' : 'RIGHT'} PLAYER SCORED!`,
+        this.canvasWidth / 2,
+        90
+      );
+    }
+  }
+
+  private handleScore(side: ScoreSide): void {
+    this.lastScoreSide = side;
+    this.lastScoreTime = performance.now();
+    this.nextForcedScoreAt =
+      this.lastScoreTime + this.forcedScoreIntervalMs + Math.random() * 25_000;
+    this.spawnScoreParticles(side);
+    this.playScoreSound();
+  }
+
+  private spawnScoreParticles(side: ScoreSide): void {
+    const originX = side === 'left' ? this.canvasWidth * 0.38 : this.canvasWidth * 0.62;
+    const originY = this.ballY + this.ballSize / 2;
+    const palette = ['#f472b6', '#a78bfa', '#67e8f9', '#fde68a'];
+
+    for (let index = 0; index < 42; index += 1) {
+      const speed = 1.4 + Math.random() * 2.6;
+      const angle = (Math.PI * 2 * index) / 42 + Math.random() * 0.55;
+      this.particles.push({
+        x: originX,
+        y: originY,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        size: 2 + Math.random() * 4,
+        life: 26 + Math.floor(Math.random() * 18),
+        maxLife: 44,
+        color: palette[index % palette.length],
+      });
+    }
+  }
+
+  private playScoreSound(): void {
+    const AudioContextConstructor = window.AudioContext;
+    if (!AudioContextConstructor) {
+      return;
+    }
+
+    if (!this.audioContext) {
+      this.audioContext = new AudioContextConstructor();
+    }
+
+    if (this.audioContext.state === 'suspended') {
+      void this.audioContext.resume();
+    }
+
+    const now = this.audioContext.currentTime;
+    const gainNode = this.audioContext.createGain();
+    gainNode.gain.setValueAtTime(0.0001, now);
+    gainNode.gain.exponentialRampToValueAtTime(0.05, now + 0.02);
+    gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
+    gainNode.connect(this.audioContext.destination);
+
+    const firstTone = this.audioContext.createOscillator();
+    firstTone.type = 'triangle';
+    firstTone.frequency.setValueAtTime(540, now);
+    firstTone.connect(gainNode);
+    firstTone.start(now);
+    firstTone.stop(now + 0.12);
+
+    const secondTone = this.audioContext.createOscillator();
+    secondTone.type = 'sine';
+    secondTone.frequency.setValueAtTime(720, now + 0.1);
+    secondTone.connect(gainNode);
+    secondTone.start(now + 0.1);
+    secondTone.stop(now + 0.22);
+  }
+
+  private withAlpha(hex: string, alpha: number): string {
+    const clamped = Math.max(0, Math.min(1, alpha));
+    if (!hex.startsWith('#') || hex.length !== 7) {
+      return `rgba(255, 255, 255, ${clamped})`;
+    }
+
+    const red = parseInt(hex.slice(1, 3), 16);
+    const green = parseInt(hex.slice(3, 5), 16);
+    const blue = parseInt(hex.slice(5, 7), 16);
+    return `rgba(${red}, ${green}, ${blue}, ${clamped})`;
   }
 
   private resetBall(direction?: 1 | -1): void {
     this.ballX = this.canvasWidth / 2 - this.ballSize / 2;
     this.ballY = this.canvasHeight / 2 - this.ballSize / 2;
+    this.leftMissFrames = 0;
+    this.rightMissFrames = 0;
     const horizontalDirection = direction ?? (Math.random() > 0.5 ? 1 : -1);
     const verticalDirection = Math.random() > 0.5 ? 1 : -1;
     this.ballVX = horizontalDirection * (1.9 + Math.random() * 0.7);
