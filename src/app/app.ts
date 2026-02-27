@@ -10,6 +10,7 @@ import {
 } from '@angular/core';
 
 type PromptKey = 'professional-experience' | 'software-production' | 'my-future-projects';
+type InfoSectionKey = 'career' | 'skills' | 'education' | 'chat';
 type AuthStage =
   | 'unauthorized'
   | 'login'
@@ -26,12 +27,22 @@ type AuthStage =
 })
 export class App implements AfterViewInit, OnDestroy {
   @ViewChild('pongCanvas') private pongCanvasRef?: ElementRef<HTMLCanvasElement>;
+  @ViewChild('promptContentCard') private promptContentCardRef?: ElementRef<HTMLElement>;
 
   protected readonly selectedPrompt = signal<PromptKey>('professional-experience');
   protected readonly typedPromptText = signal('');
+  protected readonly promptContentMinHeight = signal<number | null>(null);
+  protected readonly chatCollapsed = signal(false);
   protected readonly authStage = signal<AuthStage>('unauthorized');
   protected readonly username = signal('');
   protected readonly password = signal('');
+  protected readonly infoSectionOrder = signal<ReadonlyArray<InfoSectionKey>>([
+    'career',
+    'skills',
+    'education',
+    'chat',
+  ]);
+  protected readonly draggingSection = signal<InfoSectionKey | null>(null);
 
   protected readonly technicalSkillGroups: ReadonlyArray<{ title: string; skills: ReadonlyArray<string> }> = [
     {
@@ -119,8 +130,60 @@ export class App implements AfterViewInit, OnDestroy {
   }
 
   protected selectPrompt(prompt: PromptKey): void {
+    this.capturePromptContentHeight();
     this.selectedPrompt.set(prompt);
     this.startTyping(prompt);
+  }
+
+  protected toggleChatCollapsed(): void {
+    this.chatCollapsed.update((value) => !value);
+  }
+
+  protected onSectionDragStart(event: DragEvent, section: InfoSectionKey): void {
+    if (!event.dataTransfer) {
+      return;
+    }
+
+    this.draggingSection.set(section);
+    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData('text/plain', section);
+  }
+
+  protected onSectionDragOver(event: DragEvent): void {
+    event.preventDefault();
+    if (event.dataTransfer) {
+      event.dataTransfer.dropEffect = 'move';
+    }
+  }
+
+  protected onSectionDrop(event: DragEvent, dropTarget: InfoSectionKey): void {
+    event.preventDefault();
+    const dragSource = this.draggingSection() ??
+      (event.dataTransfer?.getData('text/plain') as InfoSectionKey | '');
+
+    if (!dragSource || dragSource === dropTarget) {
+      return;
+    }
+
+    const currentOrder = [...this.infoSectionOrder()];
+    const sourceIndex = currentOrder.indexOf(dragSource);
+    const targetIndex = currentOrder.indexOf(dropTarget);
+
+    if (sourceIndex === -1 || targetIndex === -1) {
+      return;
+    }
+
+    [currentOrder[sourceIndex], currentOrder[targetIndex]] = [
+      currentOrder[targetIndex],
+      currentOrder[sourceIndex],
+    ];
+
+    this.infoSectionOrder.set(currentOrder);
+    this.draggingSection.set(null);
+  }
+
+  protected onSectionDragEnd(): void {
+    this.draggingSection.set(null);
   }
 
   ngOnDestroy(): void {
@@ -134,16 +197,39 @@ export class App implements AfterViewInit, OnDestroy {
     this.clearTypingInterval();
     const fullText = this.promptContent[prompt].body;
     this.typedPromptText.set('');
+    this.capturePromptContentHeight();
 
     let index = 0;
+    const charsPerTick =
+      fullText.length > 1800 ? 6 : fullText.length > 1100 ? 4 : 2;
+
     this.typingInterval = setInterval(() => {
-      index += 1;
+      index = Math.min(index + charsPerTick, fullText.length);
       this.typedPromptText.set(fullText.slice(0, index));
+      this.capturePromptContentHeight();
 
       if (index >= fullText.length) {
+        this.capturePromptContentHeight();
         this.clearTypingInterval();
       }
-    }, 10);
+    }, 16);
+  }
+
+  private capturePromptContentHeight(): void {
+    const card = this.promptContentCardRef?.nativeElement;
+    if (!card) {
+      return;
+    }
+
+    const measuredHeight = Math.ceil(card.getBoundingClientRect().height);
+    if (!measuredHeight) {
+      return;
+    }
+
+    const currentMinHeight = this.promptContentMinHeight() ?? 0;
+    if (measuredHeight > currentMinHeight) {
+      this.promptContentMinHeight.set(measuredHeight);
+    }
   }
 
   private clearTypingInterval(): void {

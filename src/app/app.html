@@ -37,15 +37,25 @@
 
 @if (authStage() === 'granted') {
 <main class="portfolio" aria-label="Liam Malone professional portfolio">
-    <section class="hero" aria-label="Profile overview">
-        <div class="hero-text">
-            <h1>Liam Malone</h1>
-            <p class="contact">
-                <a href="mailto:liam_malone@na.honda.com">liam_malone&#64;na.honda.com</a>
-                <span aria-hidden="true">|</span>
-                <a href="tel:+17403268764">(740) 326-8764</a>
-            </p>
+    <section class="hero-layout" aria-label="Profile overview">
+        <div class="hero-top">
+            <section class="card intro-card" aria-label="Introduction">
+                <h1>Liam Malone</h1>
+                <p class="contact">
+                    <a href="mailto:liam_malone@na.honda.com">liam_malone&#64;na.honda.com</a>
+                    <span aria-hidden="true">|</span>
+                    <a href="tel:+17403268764">(740) 326-8764</a>
+                </p>
+            </section>
 
+            <div class="hero-image-wrapper">
+                <div class="hero-image" role="img" aria-label="Portrait of Liam Malone">
+                    <img src="IMG_9027.png" alt="Liam Malone" />
+                </div>
+            </div>
+        </div>
+
+        <div class="info-grid">
             <article class="card career-card" aria-labelledby="career-profile-title">
                 <h2 id="career-profile-title">Career Profile</h2>
                 <p>
@@ -58,18 +68,6 @@
                     quality practices. Known for a proactive approach to problem-solving, attention to detail,
                     and a growth mindset in fast-paced, technology-driven environments.
                 </p>
-            </article>
-
-            <article class="card skills-card" aria-labelledby="skills-title">
-                <h2 id="skills-title">Technical Skills</h2>
-                @for (group of technicalSkillGroups; track group.title) {
-                <h3>{{ group.title }}</h3>
-                <ul>
-                    @for (skill of group.skills; track skill) {
-                    <li>{{ skill }}</li>
-                    }
-                </ul>
-                }
             </article>
 
             <article class="card education-card" aria-labelledby="education-title">
@@ -87,43 +85,61 @@
                     </li>
                 </ul>
             </article>
-        </div>
 
-        <div class="hero-right">
-            <div class="hero-image-wrapper">
-                <div class="hero-image" role="img" aria-label="Portrait of Liam Malone">
-                    <img src="IMG_9027.png" alt="Liam Malone" />
-                </div>
-            </div>
+            <article class="card skills-card wide-row" aria-labelledby="skills-title">
+                <h2 id="skills-title">Technical Skills</h2>
+                @for (group of technicalSkillGroups; track group.title) {
+                <h3>{{ group.title }}</h3>
+                <ul>
+                    @for (skill of group.skills; track skill) {
+                    <li>{{ skill }}</li>
+                    }
+                </ul>
+                }
+            </article>
 
-            <section class="chat-section" aria-labelledby="open-chat-title">
-                <h2 id="open-chat-title">Open Chat</h2>
-                <p class="chat-subtitle">Select a prompt to view technical details and production impact.</p>
-
-                <div class="prompt-actions" role="tablist" aria-label="Portfolio detail prompts">
-                    <button type="button" class="prompt" [class.active]="selectedPrompt() === 'professional-experience'"
-                        [attr.aria-selected]="selectedPrompt() === 'professional-experience'"
-                        (click)="selectPrompt('professional-experience')">
-                        Professional Experience
-                    </button>
-                    <button type="button" class="prompt" [class.active]="selectedPrompt() === 'software-production'"
-                        [attr.aria-selected]="selectedPrompt() === 'software-production'"
-                        (click)="selectPrompt('software-production')">
-                        Software Developed by Me in Production
-                    </button>
-                    <button type="button" class="prompt" [class.active]="selectedPrompt() === 'my-future-projects'"
-                        [attr.aria-selected]="selectedPrompt() === 'my-future-projects'"
-                        (click)="selectPrompt('my-future-projects')">
-                        My Future Projects
+            <section class="chat-section wide-row" [class.collapsed]="chatCollapsed()"
+                aria-labelledby="open-chat-title">
+                <div class="chat-header">
+                    <h2 id="open-chat-title">Open Chat</h2>
+                    <button type="button" class="chat-toggle" (click)="toggleChatCollapsed()"
+                        [attr.aria-expanded]="!chatCollapsed()" aria-controls="chat-body">
+                        {{ chatCollapsed() ? 'Expand' : 'Collapse' }}
                     </button>
                 </div>
 
-                <article class="prompt-content" aria-live="polite">
-                    <h3>{{ currentPrompt().heading }}</h3>
-                    <p class="typed-text">
-                        {{ typedPromptText() }}<span class="typing-cursor" aria-hidden="true"></span>
-                    </p>
-                </article>
+                @if (!chatCollapsed()) {
+                <div id="chat-body">
+                    <p class="chat-subtitle">Select a prompt to view technical details and production impact.</p>
+
+                    <div class="prompt-actions" role="tablist" aria-label="Portfolio detail prompts">
+                        <button type="button" class="prompt"
+                            [class.active]="selectedPrompt() === 'professional-experience'"
+                            [attr.aria-selected]="selectedPrompt() === 'professional-experience'"
+                            (click)="selectPrompt('professional-experience')">
+                            Professional Experience
+                        </button>
+                        <button type="button" class="prompt" [class.active]="selectedPrompt() === 'software-production'"
+                            [attr.aria-selected]="selectedPrompt() === 'software-production'"
+                            (click)="selectPrompt('software-production')">
+                            Software Developed by Me in Production
+                        </button>
+                        <button type="button" class="prompt" [class.active]="selectedPrompt() === 'my-future-projects'"
+                            [attr.aria-selected]="selectedPrompt() === 'my-future-projects'"
+                            (click)="selectPrompt('my-future-projects')">
+                            My Future Projects
+                        </button>
+                    </div>
+
+                    <article #promptContentCard class="prompt-content" [style.min-height.px]="promptContentMinHeight()"
+                        aria-live="polite">
+                        <h3>{{ currentPrompt().heading }}</h3>
+                        <p class="typed-text">
+                            {{ typedPromptText() }}<span class="typing-cursor" aria-hidden="true"></span>
+                        </p>
+                    </article>
+                </div>
+                }
             </section>
         </div>
     </section>
