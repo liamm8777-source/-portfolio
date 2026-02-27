@@ -1,0 +1,131 @@
+<canvas #pongCanvas class="pong-background" aria-hidden="true"></canvas>
+
+@if (authStage() !== 'granted') {
+<section class="auth-overlay" aria-label="Authorization dialog">
+    <div class="auth-panel" [class.auth-panel-top-right]="authStage() === 'visitor-authorized'"
+        [class.auth-panel-bottom-left]="authStage() === 'validating-status'"
+        [class.auth-panel-center]="authStage() === 'welcome'">
+        @if (authStage() === 'unauthorized') {
+        <p class="auth-alert">USER NOT AUTHORIZED</p>
+        <p class="auth-meta">Initializing secure handshake...</p>
+        } @else if (authStage() === 'login') {
+        <h2>SECURE LOGIN</h2>
+        <p class="auth-meta">Injecting credentials...</p>
+        <form class="auth-form" aria-label="Automatic login sequence">
+            <label for="username">Username</label>
+            <input id="username" type="text" [value]="username()" readonly autocomplete="off" />
+
+            <label for="password">Password</label>
+            <input id="password" type="password" [value]="password()" readonly autocomplete="off" />
+        </form>
+        } @else if (authStage() === 'visitor-authorized') {
+        <h2>VISITOR IS NOW AUTHORIZED</h2>
+        <p class="auth-meta">Access profile confirmed. Preparing next check...</p>
+        <div class="auth-loader" aria-hidden="true"></div>
+        } @else if (authStage() === 'validating-status') {
+        <h2>VALIDATING STATUS</h2>
+        <p class="auth-meta">Reviewing session integrity and environment status...</p>
+        <div class="auth-loader" aria-hidden="true"></div>
+        } @else {
+        <h2>WELCOME</h2>
+        <p class="auth-meta">Loading interactive portfolio experience...</p>
+        <div class="auth-loader" aria-hidden="true"></div>
+        }
+    </div>
+</section>
+}
+
+@if (authStage() === 'granted') {
+<main class="portfolio" aria-label="Liam Malone professional portfolio">
+    <section class="hero" aria-label="Profile overview">
+        <div class="hero-text">
+            <h1>Liam Malone</h1>
+            <p class="contact">
+                <a href="mailto:liam_malone@na.honda.com">liam_malone&#64;na.honda.com</a>
+                <span aria-hidden="true">|</span>
+                <a href="tel:+17403268764">(740) 326-8764</a>
+            </p>
+
+            <article class="card career-card" aria-labelledby="career-profile-title">
+                <h2 id="career-profile-title">Career Profile</h2>
+                <p>
+                    Motivated Computer Science student and Honda co-op in Systems Applications Development,
+                    focused on delivering practical, production-ready software solutions that create measurable
+                    business value.
+                </p>
+                <p>
+                    Experienced in team collaboration, technical communication, project coordination, and code
+                    quality practices. Known for a proactive approach to problem-solving, attention to detail,
+                    and a growth mindset in fast-paced, technology-driven environments.
+                </p>
+            </article>
+
+            <article class="card skills-card" aria-labelledby="skills-title">
+                <h2 id="skills-title">Technical Skills</h2>
+                @for (group of technicalSkillGroups; track group.title) {
+                <h3>{{ group.title }}</h3>
+                <ul>
+                    @for (skill of group.skills; track skill) {
+                    <li>{{ skill }}</li>
+                    }
+                </ul>
+                }
+            </article>
+
+            <article class="card education-card" aria-labelledby="education-title">
+                <h2 id="education-title">Education</h2>
+                <p><strong>Columbus State Community College</strong> · Columbus, OH</p>
+                <p>
+                    Associate of Applied Science, Computer Science Software Development
+                    <strong>Expected Graduation Date: Summer 2026</strong>
+                </p>
+                <ul>
+                    <li>Dean’s List Recipient</li>
+                    <li>
+                        Relevant Coursework: Database Fundamentals, Networking Principles, Introduction to Python,
+                        HTML, Computer Concepts and Applications, Cloud Foundations
+                    </li>
+                </ul>
+            </article>
+        </div>
+
+        <div class="hero-right">
+            <div class="hero-image-wrapper">
+                <div class="hero-image" role="img" aria-label="Portrait of Liam Malone">
+                    <img src="/IMG_9027.png" alt="Liam Malone" />
+                </div>
+            </div>
+
+            <section class="chat-section" aria-labelledby="open-chat-title">
+                <h2 id="open-chat-title">Open Chat</h2>
+                <p class="chat-subtitle">Select a prompt to view technical details and production impact.</p>
+
+                <div class="prompt-actions" role="tablist" aria-label="Portfolio detail prompts">
+                    <button type="button" class="prompt" [class.active]="selectedPrompt() === 'professional-experience'"
+                        [attr.aria-selected]="selectedPrompt() === 'professional-experience'"
+                        (click)="selectPrompt('professional-experience')">
+                        Professional Experience
+                    </button>
+                    <button type="button" class="prompt" [class.active]="selectedPrompt() === 'software-production'"
+                        [attr.aria-selected]="selectedPrompt() === 'software-production'"
+                        (click)="selectPrompt('software-production')">
+                        Software Developed by Me in Production
+                    </button>
+                    <button type="button" class="prompt" [class.active]="selectedPrompt() === 'my-future-projects'"
+                        [attr.aria-selected]="selectedPrompt() === 'my-future-projects'"
+                        (click)="selectPrompt('my-future-projects')">
+                        My Future Projects
+                    </button>
+                </div>
+
+                <article class="prompt-content" aria-live="polite">
+                    <h3>{{ currentPrompt().heading }}</h3>
+                    <p class="typed-text">
+                        {{ typedPromptText() }}<span class="typing-cursor" aria-hidden="true"></span>
+                    </p>
+                </article>
+            </section>
+        </div>
+    </section>
+</main>
+}
