@@ -1,0 +1,27 @@
+<section class="skills-scene">
+    <canvas #skillsCanvas class="skills-background" aria-hidden="true"></canvas>
+
+    <article class="section-card" aria-labelledby="skills-title">
+        <header class="section-header">
+            <p class="eyebrow">Technical Capability</p>
+            <h2 id="skills-title">Technical Skills</h2>
+            <p class="intro">
+                Balanced across software engineering, infrastructure fundamentals, and practical delivery
+                in team-based production environments.
+            </p>
+        </header>
+
+        <section class="skills-grid" aria-label="Grouped technical skills">
+            @for (group of technicalSkillGroups; track group.title) {
+            <div class="skill-group">
+                <h3>{{ group.title }}</h3>
+                <ul>
+                    @for (skill of group.skills; track skill) {
+                    <li>{{ skill }}</li>
+                    }
+                </ul>
+            </div>
+            }
+        </section>
+    </article>
+</section>

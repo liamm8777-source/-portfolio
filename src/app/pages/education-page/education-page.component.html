@@ -1,0 +1,37 @@
+<section class="education-scene">
+    <canvas #asteroidsCanvas class="asteroids-background" aria-hidden="true"></canvas>
+
+    <article class="section-card" aria-labelledby="education-title">
+        <header class="section-header">
+            <p class="eyebrow">Academic Background</p>
+            <h2 id="education-title">Education</h2>
+        </header>
+
+        <section class="school-card" aria-label="Current education program">
+            <h3>Columbus State Community College</h3>
+            <p class="meta">Columbus, OH</p>
+            <p class="program">Associate of Applied Science, Computer Science Software Development</p>
+            <p class="date">Expected Graduation: Summer 2026</p>
+        </section>
+
+        <section class="content-grid" aria-label="Academic highlights and coursework">
+            <div class="panel">
+                <h4>Highlights</h4>
+                <ul>
+                    @for (highlight of highlights; track highlight) {
+                    <li>{{ highlight }}</li>
+                    }
+                </ul>
+            </div>
+
+            <div class="panel">
+                <h4>Relevant Coursework</h4>
+                <ul class="course-list">
+                    @for (course of coursework; track course) {
+                    <li>{{ course }}</li>
+                    }
+                </ul>
+            </div>
+        </section>
+    </article>
+</section>

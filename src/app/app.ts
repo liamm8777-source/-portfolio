@@ -8,6 +8,8 @@ import {
   computed,
   signal,
 } from '@angular/core';
+import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { Subscription } from 'rxjs';
 
 type PromptKey = 'professional-experience' | 'software-production' | 'my-future-projects';
 type InfoSectionKey = 'career' | 'skills' | 'education' | 'chat';
@@ -22,6 +24,7 @@ type AuthStage =
 
 @Component({
   selector: 'app-root',
+  imports: [RouterOutlet, RouterLink, RouterLinkActive],
   templateUrl: './app.html',
   styleUrl: './app.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -35,6 +38,7 @@ export class App implements AfterViewInit, OnDestroy {
   protected readonly promptContentMinHeight = signal<number | null>(null);
   protected readonly chatCollapsed = signal(false);
   protected readonly authStage = signal<AuthStage>('unauthorized');
+  protected readonly isEducationRoute = signal(false);
   protected readonly username = signal('');
   protected readonly password = signal('');
   protected readonly infoSectionOrder = signal<ReadonlyArray<InfoSectionKey>>([
@@ -137,9 +141,16 @@ export class App implements AfterViewInit, OnDestroy {
     color: string;
   }> = [];
   private audioContext?: AudioContext;
+  private routeSubscription?: Subscription;
 
-  constructor() {
+  constructor(private readonly router: Router) {
     this.nextForcedScoreAt = performance.now() + 45_000;
+    this.handleRouteChange(this.router.url);
+    this.routeSubscription = this.router.events.subscribe((event) => {
+      if (event instanceof NavigationEnd) {
+        this.handleRouteChange(event.urlAfterRedirects);
+      }
+    });
     this.startTyping('professional-experience');
     this.beginAuthSequence();
   }
@@ -206,10 +217,25 @@ export class App implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.routeSubscription?.unsubscribe();
     this.clearTypingInterval();
     this.clearAuthTimeout();
     this.clearAuthIntervals();
     this.stopPong();
+  }
+
+  private handleRouteChange(url: string): void {
+    const isEducation = url.startsWith('/education');
+    this.isEducationRoute.set(isEducation);
+
+    if (isEducation) {
+      this.stopPong();
+      return;
+    }
+
+    if (!this.animationFrameId && this.pongCanvasRef?.nativeElement) {
+      this.initializePong();
+    }
   }
 
   private startTyping(prompt: PromptKey): void {
@@ -344,6 +370,10 @@ export class App implements AfterViewInit, OnDestroy {
   }
 
   private initializePong(): void {
+    if (this.animationFrameId) {
+      return;
+    }
+
     const canvas = this.pongCanvasRef?.nativeElement;
     if (!canvas) {
       return;

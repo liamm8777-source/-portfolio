@@ -1,0 +1,38 @@
+<section class="chat-scene">
+    <canvas #chatCanvas class="chat-background" aria-hidden="true"></canvas>
+
+    <section class="chat-section" aria-labelledby="open-chat-title">
+        <header class="chat-header">
+            <p class="eyebrow">Interactive Briefing</p>
+            <h2 id="open-chat-title">Open Chat</h2>
+            <p class="chat-subtitle">Select a topic to preview role-specific experience and direction.</p>
+        </header>
+
+        <div class="chat-layout">
+            <div class="prompt-actions" role="tablist" aria-label="Portfolio detail prompts">
+                <button type="button" class="prompt" [class.active]="selectedPrompt() === 'professional-experience'"
+                    [attr.aria-selected]="selectedPrompt() === 'professional-experience'"
+                    (click)="selectPrompt('professional-experience')">
+                    Professional Experience
+                </button>
+                <button type="button" class="prompt" [class.active]="selectedPrompt() === 'software-production'"
+                    [attr.aria-selected]="selectedPrompt() === 'software-production'"
+                    (click)="selectPrompt('software-production')">
+                    Production Software Impact
+                </button>
+                <button type="button" class="prompt" [class.active]="selectedPrompt() === 'my-future-projects'"
+                    [attr.aria-selected]="selectedPrompt() === 'my-future-projects'"
+                    (click)="selectPrompt('my-future-projects')">
+                    Future Projects
+                </button>
+            </div>
+
+            <article class="prompt-content" aria-live="polite">
+                <h3>{{ currentPrompt().heading }}</h3>
+                <p class="typed-text">
+                    {{ typedPromptText() }}<span class="typing-cursor" aria-hidden="true"></span>
+                </p>
+            </article>
+        </div>
+    </section>
+</section>

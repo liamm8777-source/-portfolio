@@ -1,0 +1,31 @@
+<article class="section-card" aria-labelledby="career-profile-title">
+    <header class="section-header">
+        <p class="eyebrow">Professional Summary</p>
+        <h2 id="career-profile-title">Career Profile</h2>
+        <p class="intro">
+            Computer Science student and Honda co-op delivering production-ready software,
+            AI-integrated workflows, and practical engineering improvements that support
+            business and manufacturing outcomes.
+        </p>
+    </header>
+
+    <section class="content-grid" aria-label="Career highlights and strengths">
+        <div class="panel">
+            <h3>Key Contributions</h3>
+            <ul>
+                @for (item of contributions; track item) {
+                <li>{{ item }}</li>
+                }
+            </ul>
+        </div>
+
+        <div class="panel">
+            <h3>Core Strengths</h3>
+            <ul class="chip-list">
+                @for (strength of strengths; track strength) {
+                <li>{{ strength }}</li>
+                }
+            </ul>
+        </div>
+    </section>
+</article>
