@@ -1,0 +1,23 @@
+<section class="hobbies-scene" aria-labelledby="hobbies-title">
+    <canvas #snakeCanvas class="snake-background" aria-hidden="true"></canvas>
+
+    <article class="section-card">
+        <header class="section-header">
+            <p class="eyebrow">Beyond Work</p>
+            <h2 id="hobbies-title">My Hobbies</h2>
+            <p class="intro">
+                Outside of engineering, I gravitate toward the kinds of interests that keep me curious,
+                creative, and engaged with design, storytelling, and craft.
+            </p>
+        </header>
+
+        <section class="hobbies-grid" aria-label="Personal interests and hobbies">
+            @for (item of hobbies; track item.title) {
+            <article class="hobby-panel">
+                <h3>{{ item.title }}</h3>
+                <p>{{ item.detail }}</p>
+            </article>
+            }
+        </section>
+    </article>
+</section>

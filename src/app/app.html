@@ -1,4 +1,4 @@
-@if (!isEducationRoute()) {
+@if (!isEducationRoute() && !isHobbiesRoute() && !isSkillsRoute() && !isOpenChatRoute()) {
 <canvas #pongCanvas class="pong-background" aria-hidden="true"></canvas>
 }
 
@@ -58,6 +58,7 @@
         <nav class="section-nav" aria-label="Portfolio section pages">
             <a routerLink="/career" routerLinkActive="active" class="section-link">Career Profile</a>
             <a routerLink="/education" routerLinkActive="active" class="section-link">Education</a>
+            <a routerLink="/hobbies" routerLinkActive="active" class="section-link">My Hobbies</a>
             <a routerLink="/skills" routerLinkActive="active" class="section-link">Technical Skills</a>
             <a routerLink="/open-chat" routerLinkActive="active" class="section-link">Open Chat</a>
         </nav>

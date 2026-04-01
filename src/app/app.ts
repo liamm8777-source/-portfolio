@@ -30,7 +30,21 @@ type AuthStage =
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class App implements AfterViewInit, OnDestroy {
-  @ViewChild('pongCanvas') private pongCanvasRef?: ElementRef<HTMLCanvasElement>;
+  @ViewChild('pongCanvas')
+  private set pongCanvasRef(value: ElementRef<HTMLCanvasElement> | undefined) {
+    this._pongCanvasRef = value;
+
+    if (
+      value &&
+      !this.isEducationRoute() &&
+      !this.isHobbiesRoute() &&
+      !this.isSkillsRoute() &&
+      !this.isOpenChatRoute() &&
+      !this.animationFrameId
+    ) {
+      this.initializePong();
+    }
+  }
   @ViewChild('promptContentCard') private promptContentCardRef?: ElementRef<HTMLElement>;
 
   protected readonly selectedPrompt = signal<PromptKey>('professional-experience');
@@ -39,6 +53,9 @@ export class App implements AfterViewInit, OnDestroy {
   protected readonly chatCollapsed = signal(false);
   protected readonly authStage = signal<AuthStage>('unauthorized');
   protected readonly isEducationRoute = signal(false);
+  protected readonly isHobbiesRoute = signal(false);
+  protected readonly isSkillsRoute = signal(false);
+  protected readonly isOpenChatRoute = signal(false);
   protected readonly username = signal('');
   protected readonly password = signal('');
   protected readonly infoSectionOrder = signal<ReadonlyArray<InfoSectionKey>>([
@@ -108,6 +125,7 @@ export class App implements AfterViewInit, OnDestroy {
   private animationFrameId?: number;
   private resizeHandler = () => this.resizeCanvas();
   private pongCtx?: CanvasRenderingContext2D;
+  private _pongCanvasRef?: ElementRef<HTMLCanvasElement>;
   private canvasWidth = 0;
   private canvasHeight = 0;
 
@@ -226,14 +244,20 @@ export class App implements AfterViewInit, OnDestroy {
 
   private handleRouteChange(url: string): void {
     const isEducation = url.startsWith('/education');
+    const isHobbies = url.startsWith('/hobbies');
+    const isSkills = url.startsWith('/skills');
+    const isOpenChat = url.startsWith('/open-chat');
     this.isEducationRoute.set(isEducation);
+    this.isHobbiesRoute.set(isHobbies);
+    this.isSkillsRoute.set(isSkills);
+    this.isOpenChatRoute.set(isOpenChat);
 
-    if (isEducation) {
+    if (isEducation || isHobbies || isSkills || isOpenChat) {
       this.stopPong();
       return;
     }
 
-    if (!this.animationFrameId && this.pongCanvasRef?.nativeElement) {
+    if (!this.animationFrameId && this._pongCanvasRef?.nativeElement) {
       this.initializePong();
     }
   }
@@ -374,7 +398,7 @@ export class App implements AfterViewInit, OnDestroy {
       return;
     }
 
-    const canvas = this.pongCanvasRef?.nativeElement;
+    const canvas = this._pongCanvasRef?.nativeElement;
     if (!canvas) {
       return;
     }
@@ -404,7 +428,7 @@ export class App implements AfterViewInit, OnDestroy {
   }
 
   private resizeCanvas(): void {
-    const canvas = this.pongCanvasRef?.nativeElement;
+    const canvas = this._pongCanvasRef?.nativeElement;
     if (!canvas) {
       return;
     }

@@ -287,8 +287,11 @@ export class SkillsPageComponent implements AfterViewInit, OnDestroy {
     this.ctx.fillStyle = background;
     this.ctx.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
 
+    this.ctx.fillStyle = 'rgba(3, 8, 18, 0.34)';
+    this.ctx.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
+
     this.ctx.lineWidth = 1;
-    this.ctx.strokeStyle = 'rgba(125, 211, 252, 0.08)';
+    this.ctx.strokeStyle = 'rgba(125, 211, 252, 0.09)';
     for (let x = 40; x < this.canvasWidth; x += 40) {
       this.ctx.beginPath();
       this.ctx.moveTo(x, 0);
@@ -311,10 +314,10 @@ export class SkillsPageComponent implements AfterViewInit, OnDestroy {
         this.getNodeX(toNode),
         this.getNodeY(toNode),
       );
-      gradient.addColorStop(0, `rgba(96, 165, 250, ${0.14 + connection.activity * 0.35})`);
-      gradient.addColorStop(1, `rgba(52, 211, 153, ${0.12 + connection.activity * 0.42})`);
+      gradient.addColorStop(0, `rgba(96, 165, 250, ${0.12 + connection.activity * 0.24})`);
+      gradient.addColorStop(1, `rgba(52, 211, 153, ${0.1 + connection.activity * 0.28})`);
       this.ctx.strokeStyle = gradient;
-      this.ctx.lineWidth = 1.2 + connection.activity * 1.6;
+      this.ctx.lineWidth = 1.1 + connection.activity * 1.35;
       this.ctx.beginPath();
       this.ctx.moveTo(this.getNodeX(fromNode), this.getNodeY(fromNode));
       this.ctx.lineTo(this.getNodeX(toNode), this.getNodeY(toNode));
@@ -324,9 +327,9 @@ export class SkillsPageComponent implements AfterViewInit, OnDestroy {
     for (const packet of this.packets) {
       const { x, y } = this.getPacketPosition(packet);
       this.ctx.beginPath();
-      this.ctx.fillStyle = `hsla(${packet.hue}, 95%, 70%, 0.96)`;
-      this.ctx.shadowBlur = 14;
-      this.ctx.shadowColor = `hsla(${packet.hue}, 100%, 65%, 0.9)`;
+      this.ctx.fillStyle = `hsla(${packet.hue}, 80%, 66%, 0.46)`;
+      this.ctx.shadowBlur = 11;
+      this.ctx.shadowColor = `hsla(${packet.hue}, 85%, 62%, 0.42)`;
       this.ctx.arc(x, y, packet.radius, 0, Math.PI * 2);
       this.ctx.fill();
     }
@@ -334,7 +337,7 @@ export class SkillsPageComponent implements AfterViewInit, OnDestroy {
     this.ctx.shadowBlur = 0;
     for (const spark of this.sparks) {
       const alpha = spark.life / spark.maxLife;
-      this.ctx.fillStyle = `rgba(251, 191, 36, ${Math.max(0, alpha)})`;
+      this.ctx.fillStyle = `rgba(251, 191, 36, ${Math.max(0, alpha * 0.48)})`;
       this.ctx.fillRect(spark.x, spark.y, 2, 2);
     }
 
@@ -343,20 +346,20 @@ export class SkillsPageComponent implements AfterViewInit, OnDestroy {
       const y = this.getNodeY(node);
       const radius = 7 + node.charge * 4;
       this.ctx.beginPath();
-      this.ctx.fillStyle = `rgba(15, 23, 42, ${0.9 - node.charge * 0.28})`;
+      this.ctx.fillStyle = `rgba(15, 23, 42, ${0.64 - node.charge * 0.16})`;
       this.ctx.arc(x, y, radius + 6, 0, Math.PI * 2);
       this.ctx.fill();
 
       this.ctx.beginPath();
-      this.ctx.shadowBlur = 18;
-      this.ctx.shadowColor = `rgba(34, 211, 238, ${0.22 + node.charge * 0.4})`;
-      this.ctx.fillStyle = `rgba(125, 211, 252, ${0.28 + node.charge * 0.55})`;
+      this.ctx.shadowBlur = 14;
+      this.ctx.shadowColor = `rgba(34, 211, 238, ${0.16 + node.charge * 0.24})`;
+      this.ctx.fillStyle = `rgba(125, 211, 252, ${0.22 + node.charge * 0.28})`;
       this.ctx.arc(x, y, radius, 0, Math.PI * 2);
       this.ctx.fill();
 
       this.ctx.beginPath();
-      this.ctx.strokeStyle = `rgba(167, 243, 208, ${0.32 + node.charge * 0.45})`;
-      this.ctx.lineWidth = 1.1;
+      this.ctx.strokeStyle = `rgba(167, 243, 208, ${0.16 + node.charge * 0.24})`;
+      this.ctx.lineWidth = 0.95;
       this.ctx.arc(x, y, radius + 9 + Math.sin(this.sceneTime * 1.7 + node.column + node.row) * 2.5, 0, Math.PI * 2);
       this.ctx.stroke();
       this.ctx.shadowBlur = 0;

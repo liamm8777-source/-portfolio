@@ -234,7 +234,10 @@ export class OpenChatPageComponent implements AfterViewInit, OnDestroy {
     this.ctx.fillStyle = background;
     this.ctx.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
 
-    this.ctx.strokeStyle = 'rgba(148, 163, 184, 0.09)';
+    this.ctx.fillStyle = 'rgba(3, 6, 16, 0.34)';
+    this.ctx.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
+
+    this.ctx.strokeStyle = 'rgba(148, 163, 184, 0.1)';
     this.ctx.lineWidth = 1;
     for (let x = 32; x < this.canvasWidth; x += 32) {
       this.ctx.beginPath();
@@ -251,36 +254,36 @@ export class OpenChatPageComponent implements AfterViewInit, OnDestroy {
       this.drawSignalLane(lane, 'response', theme.glow);
     }
 
-    this.ctx.fillStyle = 'rgba(15, 23, 42, 0.78)';
-    this.ctx.strokeStyle = 'rgba(125, 211, 252, 0.26)';
+    this.ctx.fillStyle = 'rgba(15, 23, 42, 0.68)';
+    this.ctx.strokeStyle = 'rgba(125, 211, 252, 0.28)';
     this.ctx.lineWidth = 1.4;
     this.ctx.beginPath();
     this.roundRect(this.ctx, terminal.x - 52, terminal.y - 42, 104, 84, 18);
     this.ctx.fill();
     this.ctx.stroke();
 
-    this.ctx.fillStyle = 'rgba(125, 211, 252, 0.14)';
+    this.ctx.fillStyle = 'rgba(125, 211, 252, 0.16)';
     this.ctx.fillRect(terminal.x - 32, terminal.y - 18, 64, 12);
     this.ctx.fillRect(terminal.x - 32, terminal.y + 2, 48, 12);
 
     this.ctx.beginPath();
-    this.ctx.fillStyle = 'rgba(15, 23, 42, 0.82)';
+    this.ctx.fillStyle = 'rgba(15, 23, 42, 0.7)';
     this.ctx.arc(model.x, model.y, 32, 0, Math.PI * 2);
     this.ctx.fill();
 
     this.ctx.beginPath();
-    this.ctx.shadowBlur = 24;
+    this.ctx.shadowBlur = 16;
     this.ctx.shadowColor = theme.glow;
-    this.ctx.strokeStyle = theme.core;
-    this.ctx.lineWidth = 2.6;
+    this.ctx.strokeStyle = theme.core.replace('0.88', '0.52').replace('0.9', '0.52');
+    this.ctx.lineWidth = 2;
     this.ctx.arc(model.x, model.y, 32, 0, Math.PI * 2);
     this.ctx.stroke();
     this.ctx.shadowBlur = 0;
 
     for (const ripple of this.ripples) {
       this.ctx.beginPath();
-      this.ctx.strokeStyle = `rgba(226, 232, 240, ${ripple.alpha})`;
-      this.ctx.lineWidth = 1.2;
+      this.ctx.strokeStyle = `rgba(226, 232, 240, ${ripple.alpha * 0.42})`;
+      this.ctx.lineWidth = 1;
       this.ctx.arc(ripple.x, ripple.y, ripple.radius, 0, Math.PI * 2);
       this.ctx.stroke();
     }
@@ -289,12 +292,12 @@ export class OpenChatPageComponent implements AfterViewInit, OnDestroy {
       const x = model.x + Math.cos(satellite.angle) * satellite.orbit;
       const y = model.y + Math.sin(satellite.angle) * satellite.orbit * 0.72;
       this.ctx.beginPath();
-      this.ctx.fillStyle = 'rgba(15, 23, 42, 0.82)';
+      this.ctx.fillStyle = 'rgba(15, 23, 42, 0.62)';
       this.ctx.arc(x, y, satellite.size + 3, 0, Math.PI * 2);
       this.ctx.fill();
 
       this.ctx.beginPath();
-      this.ctx.fillStyle = theme.outbound;
+      this.ctx.fillStyle = theme.outbound.replace('0.96', '0.48').replace('0.98', '0.48');
       this.ctx.arc(x, y, satellite.size, 0, Math.PI * 2);
       this.ctx.fill();
     }
@@ -302,9 +305,13 @@ export class OpenChatPageComponent implements AfterViewInit, OnDestroy {
     for (const packet of this.packets) {
       const point = this.getSignalPoint(packet.progress, packet.lane, packet.direction);
       this.ctx.beginPath();
-      this.ctx.shadowBlur = 16;
-      this.ctx.shadowColor = packet.direction === 'prompt' ? theme.inbound : theme.outbound;
-      this.ctx.fillStyle = packet.direction === 'prompt' ? theme.inbound : theme.outbound;
+      this.ctx.shadowBlur = 12;
+      this.ctx.shadowColor = packet.direction === 'prompt'
+        ? theme.inbound.replace('0.96', '0.42').replace('0.98', '0.42')
+        : theme.outbound.replace('0.96', '0.42').replace('0.98', '0.42');
+      this.ctx.fillStyle = packet.direction === 'prompt'
+        ? theme.inbound.replace('0.96', '0.42').replace('0.98', '0.42')
+        : theme.outbound.replace('0.96', '0.42').replace('0.98', '0.42');
       this.ctx.arc(point.x, point.y, packet.radius, 0, Math.PI * 2);
       this.ctx.fill();
       this.ctx.shadowBlur = 0;
@@ -321,8 +328,8 @@ export class OpenChatPageComponent implements AfterViewInit, OnDestroy {
     const control = this.getSignalControlPoint(lane, direction);
 
     this.ctx.beginPath();
-    this.ctx.strokeStyle = strokeStyle;
-    this.ctx.lineWidth = 1.1;
+    this.ctx.strokeStyle = strokeStyle.replace('0.42', '0.28').replace('0.4', '0.28').replace('0.45', '0.28');
+    this.ctx.lineWidth = 1;
     this.ctx.moveTo(start.x, start.y);
     this.ctx.quadraticCurveTo(control.x, control.y, end.x, end.y);
     this.ctx.stroke();
