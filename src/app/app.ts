@@ -246,7 +246,7 @@ export class App implements AfterViewInit, OnDestroy {
     const isEducation = url.startsWith('/education');
     const isHobbies = url.startsWith('/hobbies');
     const isSkills = url.startsWith('/skills');
-    const isOpenChat = url.startsWith('/open-chat');
+    const isOpenChat = url.startsWith('/open-chat') || url.startsWith('/ai-briefing');
     this.isEducationRoute.set(isEducation);
     this.isHobbiesRoute.set(isHobbies);
     this.isSkillsRoute.set(isSkills);

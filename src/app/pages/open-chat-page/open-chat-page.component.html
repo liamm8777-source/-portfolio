@@ -1,38 +1,75 @@
-<section class="chat-scene">
-    <canvas #chatCanvas class="chat-background" aria-hidden="true"></canvas>
-
-    <section class="chat-section" aria-labelledby="open-chat-title">
-        <header class="chat-header">
-            <p class="eyebrow">Interactive Briefing</p>
-            <h2 id="open-chat-title">Open Chat</h2>
-            <p class="chat-subtitle">Select a topic to preview role-specific experience and direction.</p>
+<section class="ai-page" aria-labelledby="ai-briefing-title">
+    <article class="section-card">
+        <header class="section-header">
+            <p class="eyebrow">Interactive Portfolio</p>
+            <h2 id="ai-briefing-title">AI Briefing</h2>
+            <p class="intro">
+                A dedicated subpage with preloaded prompts that surfaces the most common questions about
+                Liam's work experience, future direction, and people-focused strengths.
+            </p>
         </header>
 
-        <div class="chat-layout">
-            <div class="prompt-actions" role="tablist" aria-label="Portfolio detail prompts">
-                <button type="button" class="prompt" [class.active]="selectedPrompt() === 'professional-experience'"
-                    [attr.aria-selected]="selectedPrompt() === 'professional-experience'"
-                    (click)="selectPrompt('professional-experience')">
-                    Professional Experience
-                </button>
-                <button type="button" class="prompt" [class.active]="selectedPrompt() === 'software-production'"
-                    [attr.aria-selected]="selectedPrompt() === 'software-production'"
-                    (click)="selectPrompt('software-production')">
-                    Production Software Impact
-                </button>
-                <button type="button" class="prompt" [class.active]="selectedPrompt() === 'my-future-projects'"
-                    [attr.aria-selected]="selectedPrompt() === 'my-future-projects'"
-                    (click)="selectPrompt('my-future-projects')">
-                    Future Projects
-                </button>
-            </div>
+        <section class="workspace-grid" aria-label="AI prompt interface">
+            <aside class="prompt-panel" aria-labelledby="prompt-panel-title">
+                <p id="prompt-panel-title" class="panel-label">Preloaded Prompts</p>
+                <p class="panel-copy">Choose a question to load a prepared response.</p>
 
-            <article class="prompt-content" aria-live="polite">
-                <h3>{{ currentPrompt().heading }}</h3>
-                <p class="typed-text">
-                    {{ typedPromptText() }}<span class="typing-cursor" aria-hidden="true"></span>
-                </p>
+                <div class="prompt-list" role="tablist" aria-label="AI briefing prompts">
+                    @for (prompt of prompts; track prompt.key) {
+                    <button type="button" class="prompt-card" [class.active]="selectedPromptKey() === prompt.key"
+                        [attr.aria-selected]="selectedPromptKey() === prompt.key" (click)="selectPrompt(prompt.key)">
+                        <span class="prompt-category">{{ prompt.category }}</span>
+                        <span class="prompt-question">{{ prompt.question }}</span>
+                        <span class="prompt-preview">{{ prompt.preview }}</span>
+                    </button>
+                    }
+                </div>
+            </aside>
+
+            <article class="response-panel" aria-live="polite" aria-label="Selected AI response">
+                <header class="response-header">
+                    <div>
+                        <p class="response-eyebrow">Portfolio AI</p>
+                        <h3>{{ currentPrompt().answer.heading }}</h3>
+                    </div>
+                    <span class="status-pill" [class.typing]="isTyping()">{{ isTyping() ? 'Typing...' : 'Ready' }}</span>
+                </header>
+
+                <section class="conversation">
+                    <article class="message-bubble user-message">
+                        <p class="message-role">Visitor Prompt</p>
+                        <p class="message-text">{{ currentPrompt().question }}</p>
+                    </article>
+
+                    <article class="message-bubble assistant-message">
+                        <p class="message-role">AI Response</p>
+
+                        @for (paragraph of typedParagraphs(); track paragraph; let index = $index) {
+                        <p class="message-text response-line" [style.--item-index]="index + 1">{{ paragraph }}</p>
+                        }
+
+                        @if (activeResponseKind() === 'paragraph') {
+                        <p class="message-text typing-line">
+                            {{ activeResponseText() }}<span class="typing-cursor" aria-hidden="true"></span>
+                        </p>
+                        }
+
+                        @if (typedBullets().length || activeResponseKind() === 'bullet') {
+                        <ul class="skills-list">
+                            @for (bullet of typedBullets(); track bullet; let index = $index) {
+                            <li class="response-line" [style.--item-index]="index + 1">{{ bullet }}</li>
+                            }
+
+                            @if (activeResponseKind() === 'bullet') {
+                            <li class="typing-line">
+                                {{ activeResponseText() }}<span class="typing-cursor" aria-hidden="true"></span>
+                            </li>
+                            }
+                        </ul>
+                        }
+                    </article>
+                </section>
             </article>
-        </div>
-    </section>
+        </section>
+    </article>
 </section>

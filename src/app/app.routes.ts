@@ -11,6 +11,7 @@ export const routes: Routes = [
 	{ path: 'education', component: EducationPageComponent },
 	{ path: 'hobbies', component: HobbiesPageComponent },
 	{ path: 'skills', component: SkillsPageComponent },
-	{ path: 'open-chat', component: OpenChatPageComponent },
+	{ path: 'ai-briefing', component: OpenChatPageComponent },
+	{ path: 'open-chat', pathMatch: 'full', redirectTo: 'ai-briefing' },
 	{ path: '**', redirectTo: 'career' },
 ];
