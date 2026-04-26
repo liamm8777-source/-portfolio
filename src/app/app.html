@@ -2,6 +2,29 @@
 <canvas #pongCanvas class="pong-background" aria-hidden="true"></canvas>
 }
 
+@if (isOpenChatRoute() && authStage() === 'granted') {
+<div class="ai-stars-background" aria-hidden="true">
+    @for (glow of aiStarGlows; track glow.id) {
+    <span class="ai-star-glow" [style.left.%]="glow.left" [style.top.%]="glow.top" [style.width.rem]="glow.sizeRem"
+        [style.height.rem]="glow.sizeRem" [style.opacity]="glow.opacity" [style.--glow-color]="glow.color"
+        [style.--glow-duration]="glow.duration + 's'" [style.--glow-delay]="glow.delay + 's'"></span>
+    }
+
+    @for (star of aiStars; track star.id) {
+    <span class="ai-star" [style.left.%]="star.left" [style.top.%]="star.top" [style.--star-opacity]="star.opacity"
+        [style.--star-size]="star.sizeRem + 'rem'" [style.--star-color]="star.color"
+        [style.--star-duration]="star.duration + 's'" [style.--star-delay]="star.delay + 's'"
+        [style.--star-drift-x]="star.driftXRem + 'rem'" [style.--star-drift-y]="star.driftYRem + 'rem'"></span>
+    }
+
+    @for (trail of aiShootingStars; track trail.id) {
+    <span class="ai-shooting-star" [style.top.%]="trail.top" [style.left.%]="trail.left"
+        [style.--trail-length]="trail.lengthRem + 'rem'" [style.--trail-angle]="trail.angleDeg + 'deg'"
+        [style.--trail-duration]="trail.duration + 's'" [style.--trail-delay]="trail.delay + 's'"></span>
+    }
+</div>
+}
+
 @if (authStage() !== 'granted') {
 <section class="auth-overlay" aria-label="Authorization dialog">
     <div class="auth-panel" [class.auth-panel-top-right]="authStage() === 'visitor-authorized'"

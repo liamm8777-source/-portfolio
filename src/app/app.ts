@@ -22,6 +22,40 @@ type AuthStage =
   | 'welcome'
   | 'granted';
 
+type AiStarSpec = {
+  id: number;
+  left: number;
+  top: number;
+  sizeRem: number;
+  opacity: number;
+  duration: number;
+  delay: number;
+  driftXRem: number;
+  driftYRem: number;
+  color: string;
+};
+
+type AiStarGlowSpec = {
+  id: number;
+  left: number;
+  top: number;
+  sizeRem: number;
+  opacity: number;
+  duration: number;
+  delay: number;
+  color: string;
+};
+
+type AiShootingStarSpec = {
+  id: number;
+  left: number;
+  top: number;
+  lengthRem: number;
+  angleDeg: number;
+  duration: number;
+  delay: number;
+};
+
 @Component({
   selector: 'app-root',
   imports: [RouterOutlet, RouterLink, RouterLinkActive],
@@ -87,6 +121,9 @@ export class App implements AfterViewInit, OnDestroy {
       ],
     },
   ];
+  protected readonly aiStarGlows = this.createAiStarGlows();
+  protected readonly aiStars = this.createAiStars();
+  protected readonly aiShootingStars = this.createAiShootingStars();
 
   private readonly promptContent: Record<PromptKey, { heading: string; body: string }> = {
     'professional-experience': {
@@ -717,5 +754,107 @@ export class App implements AfterViewInit, OnDestroy {
 
   private clampPaddle(value: number): number {
     return Math.max(0, Math.min(value, this.canvasHeight - this.paddleHeight));
+  }
+
+  private createAiStarGlows(): ReadonlyArray<AiStarGlowSpec> {
+    return [
+      {
+        id: 0,
+        left: 10,
+        top: 12,
+        sizeRem: 18,
+        opacity: 0.42,
+        duration: 16,
+        delay: -3,
+        color: 'rgba(56, 189, 248, 0.3)',
+      },
+      {
+        id: 1,
+        left: 72,
+        top: 14,
+        sizeRem: 14,
+        opacity: 0.34,
+        duration: 18,
+        delay: -8,
+        color: 'rgba(244, 114, 182, 0.24)',
+      },
+      {
+        id: 2,
+        left: 56,
+        top: 62,
+        sizeRem: 16,
+        opacity: 0.26,
+        duration: 20,
+        delay: -6,
+        color: 'rgba(250, 204, 21, 0.16)',
+      },
+      {
+        id: 3,
+        left: 84,
+        top: 72,
+        sizeRem: 12,
+        opacity: 0.24,
+        duration: 14,
+        delay: -10,
+        color: 'rgba(125, 211, 252, 0.18)',
+      },
+    ];
+  }
+
+  private createAiStars(): ReadonlyArray<AiStarSpec> {
+    const palette = [
+      'rgba(255, 255, 255, 0.98)',
+      'rgba(125, 211, 252, 0.96)',
+      'rgba(244, 114, 182, 0.92)',
+      'rgba(250, 204, 21, 0.95)',
+    ] as const;
+
+    return Array.from({ length: 58 }, (_, index) => {
+      const colorIndex = (index * 3 + (index % 5)) % palette.length;
+      return {
+        id: index,
+        left: (index * 17 + (index % 4) * 11 + 4) % 100,
+        top: (index * 11 + (index % 7) * 7 + 6) % 100,
+        sizeRem: 0.12 + (index % 5) * 0.05 + (index % 3 === 0 ? 0.03 : 0),
+        opacity: 0.34 + (index % 6) * 0.08,
+        duration: 2.8 + (index % 8) * 0.6,
+        delay: -((index % 9) * 0.7),
+        driftXRem: ((index % 5) - 2) * 0.2,
+        driftYRem: (((index + 2) % 5) - 2) * 0.18,
+        color: palette[colorIndex],
+      };
+    });
+  }
+
+  private createAiShootingStars(): ReadonlyArray<AiShootingStarSpec> {
+    return [
+      {
+        id: 0,
+        left: 8,
+        top: 16,
+        lengthRem: 8,
+        angleDeg: 18,
+        duration: 10,
+        delay: -2,
+      },
+      {
+        id: 1,
+        left: 58,
+        top: 24,
+        lengthRem: 6.5,
+        angleDeg: 12,
+        duration: 12,
+        delay: -7,
+      },
+      {
+        id: 2,
+        left: 28,
+        top: 68,
+        lengthRem: 7.5,
+        angleDeg: 16,
+        duration: 11,
+        delay: -4,
+      },
+    ];
   }
 }

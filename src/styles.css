@@ -15,3 +15,155 @@ body {
     radial-gradient(circle at 50% 100%, #0e7490 0%, transparent 34%),
     linear-gradient(165deg, #020617 8%, #0f172a 45%, #111827 100%);
 }
+
+.ai-stars-background {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1;
+  pointer-events: none;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 18% 12%, rgba(56, 189, 248, 0.16), transparent 24%),
+    radial-gradient(circle at 82% 18%, rgba(244, 114, 182, 0.14), transparent 22%),
+    radial-gradient(circle at 50% 80%, rgba(250, 204, 21, 0.1), transparent 28%),
+    linear-gradient(180deg, #030712 0%, #0f172a 52%, #111827 100%);
+}
+
+.ai-stars-background::before,
+.ai-stars-background::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.ai-stars-background::before {
+  background:
+    radial-gradient(circle at 20% 18%, rgba(96, 165, 250, 0.14), transparent 18%),
+    radial-gradient(circle at 76% 24%, rgba(244, 114, 182, 0.12), transparent 16%),
+    radial-gradient(circle at 62% 72%, rgba(250, 204, 21, 0.08), transparent 20%);
+  filter: blur(20px);
+}
+
+.ai-stars-background::after {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent 14%),
+    linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.02), transparent);
+  mix-blend-mode: screen;
+}
+
+.ai-star-glow {
+  position: absolute;
+  border-radius: 999px;
+  background: radial-gradient(circle, var(--glow-color) 0%, transparent 70%);
+  filter: blur(28px);
+  animation: aiGlowFloat var(--glow-duration) ease-in-out infinite alternate;
+  animation-delay: var(--glow-delay);
+}
+
+.ai-star {
+  position: absolute;
+  width: var(--star-size);
+  height: var(--star-size);
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.98) 0 42%, var(--star-color) 68%, transparent 100%);
+  box-shadow:
+    0 0 0.45rem var(--star-color),
+    0 0 0.95rem var(--star-color);
+  animation: aiStarPulse var(--star-duration) ease-in-out infinite;
+  animation-delay: var(--star-delay);
+}
+
+.ai-star::before,
+.ai-star::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  opacity: 0.65;
+}
+
+.ai-star::before {
+  width: calc(var(--star-size) * 3.8);
+  height: 1px;
+}
+
+.ai-star::after {
+  width: 1px;
+  height: calc(var(--star-size) * 3.8);
+}
+
+.ai-shooting-star {
+  position: absolute;
+  width: var(--trail-length);
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0),
+    rgba(255, 255, 255, 0.95) 42%,
+    rgba(125, 211, 252, 0.95) 65%,
+    rgba(244, 114, 182, 0)
+  );
+  box-shadow: 0 0 1rem rgba(125, 211, 252, 0.28);
+  opacity: 0;
+  transform: rotate(var(--trail-angle));
+  animation: aiShootingStar var(--trail-duration) linear infinite;
+  animation-delay: var(--trail-delay);
+}
+
+@keyframes aiStarPulse {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(0.9);
+    opacity: var(--star-opacity);
+    filter: brightness(0.9);
+  }
+
+  45% {
+    transform: translate3d(var(--star-drift-x), var(--star-drift-y), 0) scale(1.3);
+    opacity: 1;
+    filter: brightness(1.25);
+  }
+
+  70% {
+    transform: translate3d(calc(var(--star-drift-x) * -0.35), calc(var(--star-drift-y) * -0.35), 0)
+      scale(1.05);
+    opacity: 0.65;
+  }
+}
+
+@keyframes aiGlowFloat {
+  from {
+    transform: translate3d(0, 0, 0) scale(0.94);
+  }
+
+  to {
+    transform: translate3d(1rem, -1.35rem, 0) scale(1.08);
+  }
+}
+
+@keyframes aiShootingStar {
+  0% {
+    opacity: 0;
+    transform: translate3d(-8rem, -2rem, 0) rotate(var(--trail-angle)) scaleX(0.75);
+  }
+
+  10% {
+    opacity: 0.9;
+  }
+
+  65% {
+    opacity: 0.8;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate3d(34rem, 10rem, 0) rotate(var(--trail-angle)) scaleX(1.08);
+  }
+}

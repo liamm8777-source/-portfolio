@@ -1,6 +1,11 @@
 import { ChangeDetectionStrategy, Component, OnDestroy, computed, signal } from '@angular/core';
 
-type PromptKey = 'work-experience' | 'future-goals' | 'non-technical-skills';
+type PromptKey =
+  | 'work-experience'
+  | 'honda-role'
+  | 'future-goals'
+  | 'ai-impact'
+  | 'non-technical-skills';
 type ResponseSegmentKind = 'paragraph' | 'bullet';
 
 type PromptAnswer = {
@@ -40,13 +45,41 @@ export class OpenChatPageComponent implements OnDestroy {
       },
     },
     {
+      key: 'honda-role',
+      category: 'Experience',
+      question: 'What did Liam do at Honda?',
+      preview: "A direct summary of Liam's work in Systems Applications at American Honda.",
+      answer: {
+        heading: 'Honda Experience',
+        paragraphs: [
+          'Liam worked in the Systems Applications department at American Honda, contributing to the development and improvement of a production-level mobile application built with Angular.',
+        ],
+      },
+    },
+    {
       key: 'future-goals',
       category: 'Direction',
       question: "What's next?",
-      preview: 'The career direction Liam is currently working toward.',
+      preview: 'A closer look at the front-end role Liam is actively pursuing next.',
       answer: {
         heading: 'Future Goals',
-        paragraphs: ['Liam is actively pursuing a career in a UI/UX designer role at JP Morgan.'],
+        paragraphs: [
+          'Liam is actively pursuing a role as a front-end developer at Nightwave AI, an innovative company focused on using artificial intelligence to support law enforcement and enhance public safety.',
+          'In this role, he would be responsible for building and refining the user interface, ensuring that complex AI-driven systems are translated into intuitive, efficient, and user-friendly experiences.',
+          'He is excited about the opportunity to contribute to a mission-driven organization while continuing to grow his skills in front-end development and UI/UX design.',
+        ],
+      },
+    },
+    {
+      key: 'ai-impact',
+      category: 'Perspective',
+      question: 'How do you view the impact of AI?',
+      preview: "Liam's perspective on using AI responsibly to create positive outcomes.",
+      answer: {
+        heading: 'Impact of AI',
+        paragraphs: [
+          "AI has the potential to create both challenges and opportunities, but its impact ultimately depends on how it is used. While there are valid concerns about misuse, I believe AI can be a powerful tool for good. It can help improve public safety, support law enforcement in preventing crime, and contribute to saving lives. Beyond that, AI has the ability to make education more accessible by providing learning support to students who may not have access to traditional resources, such as tutors or in-person instruction. I believe in using AI responsibly to create positive outcomes, and I am excited about contributing to technology that makes a meaningful difference in people's lives.",
+        ],
       },
     },
     {
